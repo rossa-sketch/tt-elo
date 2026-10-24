@@ -27,7 +27,9 @@ TopSpin Elo is a full-stack table tennis leaderboard and rating tracker built wi
 
 ```
 ├── db/
-│   ├── index.ts               # Initializes Drizzle ORM with drizzle-orm/netlify-db adapter
+│   ├── connection.ts          # Connector-agnostic URL/TLS normalization shared by runtime & drizzle-kit
+│   ├── connection.test.ts     # SSL mode normalization tests
+│   ├── index.ts               # Initializes Drizzle ORM with pg or the Netlify Database driver
 │   └── schema.ts              # Database schema definitions (players, matches, app_settings)
 ├── netlify/
 │   └── database/migrations/   # SQL migration files generated via drizzle-kit
@@ -71,6 +73,8 @@ TopSpin Elo is a full-stack table tennis leaderboard and rating tracker built wi
    - Initial 10 matches use placement K-factor ($K=48$), stabilizing to $K=32$ for calibrated players.
 2. **Resilient Database Layer (`src/lib/server-db.ts`)**:
    - Queries execute against Netlify Database (managed Postgres) via Drizzle ORM.
+   - `db/connection.ts` resolves either `DATABASE_URL` (pg) or `NETLIFY_DB_URL` (Netlify driver).
+   - All TLS query parameters are stripped from the URL and applied explicitly so `sslmode=require`, `uselibpqcompat=true&sslmode=require`, and drivers that only accept a URL produce the same handshake. `require` means encrypt without CA verification (libpq semantics); use `DATABASE_SSL_MODE=verify-full` for strict validation.
    - If the database is provisioning or initializing on first deploy, queries automatically use an in-memory seed store populated with sample competitors and matches so the UI remains interactive and never renders a 500 error.
 3. **Admin Authentication**:
    - General visitors browse in Read-Only Spectator Mode.

@@ -12,7 +12,9 @@ import type {
 
 const DEFAULT_ADMIN_PASSCODE = process.env.ADMIN_PASSWORD || 'spinmaster'
 
+
 // Seed players with diverse starting ratings illustrating competitive tiers
+// TODO: The fallback mechanism used with this demo data cause confusion when DB has issue
 const SEED_PLAYERS = [
   {
     name: "Marcus 'Smash' Vance",
@@ -249,7 +251,10 @@ export async function getLeaderboardData(): Promise<{
       .orderBy(desc(matches.createdAt))
       .limit(50)
   } catch (err) {
+    console.error('--- DATABASE QUERY ERROR ---')
+    console.error(err)
     // Use fallback memory store if database is offline or not configured yet
+    // TODO: This fallback can cause confusions when DB has issue
     dbPlayers = [...memoryStore.players].filter((p) => p.isActive === 1)
     dbPlayers.sort((a, b) => b.elo - a.elo)
     dbMatches = [...memoryStore.matches].sort(
@@ -369,7 +374,9 @@ export async function createPlayer(
       updatedAt: inserted.updatedAt.toISOString(),
     }
   } catch (err: any) {
+    console.error('Error in createPlayer:', err)
     // If DB unavailable, use memory fallback
+    // TODO: This fall back can cause confusions when DB has issue
     if (err?.code === '23505') {
       throw new Error(
         `A player named "${name}" already exists on the leaderboard`,
@@ -511,7 +518,9 @@ export async function recordMatch(
       },
     }
   } catch (err: any) {
+    console.error('Error in recordMatch:', err)
     // Memory fallback
+    // TODO: This fall back can cause confusions when DB has issue
     const p1 = memoryStore.players.find((p) => p.id === player1Id)
     const p2 = memoryStore.players.find((p) => p.id === player2Id)
 

@@ -47,6 +47,31 @@ Or run via the Netlify CLI to emulate full Netlify platform features:
 
 Open `http://localhost:3000` (or `http://localhost:8889`) in your browser.
 
+### Database Connection & TLS
+
+The connection is configured in `db/connection.ts` and works with either the
+standard `pg` driver or the Netlify Database driver:
+
+- `DATABASE_URL` is preferred; `NETLIFY_DB_URL` (injected on Netlify) is the fallback.
+- SSL parameters (`sslmode`, `uselibpqcompat`, `sslrootcert`, ...) are removed from
+the URL and applied explicitly. This prevents `sslmode=require` from silently
+overwriting `ssl.rejectUnauthorized` inside `pg`.
+- For URL-only drivers, the URL is rewritten to a single canonical `sslmode`
+value (`no-verify` for libpq-style `require`, or `verify-full`).
+- `require` encrypts without requiring a trusted CA, matching libpq behaviour
+and working with managed providers that use private CA chains.
+- Local databases use no TLS by default.
+
+Optional overrides:
+
+| Variable | Values | Description |
+| --- | --- | --- |
+| `DB_CONNECTOR` | `pg`, `netlify` | Force a connector (default: `pg` for `DATABASE_URL`) |
+| `DATABASE_SSL_MODE` | `disable`, `require`, `no-verify`, `verify-ca`, `verify-full` | Overrides the URL's `sslmode` |
+| `DATABASE_SSL_CA` | path or inline PEM | CA bundle used by `verify-ca`/`verify-full` |
+| `DATABASE_POOL_MAX` | number | Maximum pool size (default `10`) |
+| `DATABASE_CONNECT_TIMEOUT_MS` | number | Connection timeout (default `10000`) |
+
 ### Admin Access
 
 - Click **Admin Login** in the top navigation bar.

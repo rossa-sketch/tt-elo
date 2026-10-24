@@ -1,0 +1,4 @@
+//#region node_modules/.pnpm/@tanstack+react-start@1.169.1_esbuild@0.28.1_react-dom@19.3.0_react@19.3.0__react@19.3._b99f58c36190973dee38df10030032a4/node_modules/@tanstack/react-start/dist/plugin/default-entry/start.ts
+var startInstance = void 0;
+//#endregion
+export { startInstance };
